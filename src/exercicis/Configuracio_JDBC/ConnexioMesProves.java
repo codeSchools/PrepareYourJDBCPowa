@@ -1,4 +1,4 @@
-package exercicis;
+package exercicis.Configuracio_JDBC;
 
 import java.sql.*;
 import java.io.*;

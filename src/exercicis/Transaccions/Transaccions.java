@@ -2,13 +2,15 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package exercicis;
+package exercicis.Transaccions;
 
 import java.sql.PreparedStatement;
 import java.io.IOException;
 import java.sql.*;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+
+import exercicis.ClassUtilityConnexio.BDAccessor;
 
 /**
 Classe que realitza operacions sobre una taula Alumne. Utilitza una classe d'utilitat per a gestionar la connexió a

@@ -1,4 +1,4 @@
-package edu.fje.daw2;
+package exercicis.RowSet;
 
 import java.sql.PreparedStatement;
 import java.io.IOException;

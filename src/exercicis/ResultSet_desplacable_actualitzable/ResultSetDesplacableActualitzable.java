@@ -1,4 +1,4 @@
-package edu.fje.daw2;
+package exercicis.ResultSet_desplacable_actualitzable;
 
 import java.sql.PreparedStatement;
 import java.io.IOException;
@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+
+import exercicis.ClassUtilityConnexio.BDAccessor;
 
 /**
  * Classe que realitza operacions amb un ResultSet amb desplaçament i actualitzable. Utilitza una classe d'utilitat per

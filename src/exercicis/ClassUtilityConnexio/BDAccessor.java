@@ -1,4 +1,4 @@
-package exercicis;
+package exercicis.ClassUtilityConnexio;
 
 import java.io.FileInputStream;
 import java.io.IOException;

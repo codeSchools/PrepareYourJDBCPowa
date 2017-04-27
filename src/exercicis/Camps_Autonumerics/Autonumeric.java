@@ -1,34 +1,27 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package exercicis;
+package exercicis.Camps_Autonumerics;
 
-import java.sql.PreparedStatement;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.sql.*;
+import java.io.*;
+import java.util.*;
+
+import exercicis.ClassUtilityConnexio.BDAccessor;
 
 /**
-Classe que realitza operacions sobre una taula Alumne. Utilitza una classe d'utilitat per a gestionar la connexió a
- * la BD i els camps són autonumèrics. Utilitza Sentències preparades
+ * Classe que realitza operacions sobre una taula Alumne. Utilitza una classe d'utilitat per a gestionar la connexió a
+ * la BD i els camps són autonumèrics
  *
  * @author sergi grau
- * @version 1.0 14.02.2012
+ * @version 1.0 6.02.2012
  */
-public class TracatamentAlumnesNotesSentenciesPreparades {
+public class Autonumeric {
 
     private static Connection conn;
-    private static PreparedStatement pstmt;
+    private static Statement stmt;
     private static BDAccessor bd= null;
 
     public static void main(String args[])  {
 
-        bd  = new BDAccessor();
+         bd = new BDAccessor();
         try {
             conn = bd.obtenirConnexio();
 
@@ -82,8 +75,7 @@ public class TracatamentAlumnesNotesSentenciesPreparades {
                     consultarAlumnes(condicio);
                     break;
                 case 4:
-                       BDAccessor.tancarPreparedStatement(pstmt);
-                       BDAccessor.tancarConnexio(conn);
+                    conn.close();
                     break;
                 default:
                     System.out.println("opció incorrecta");
@@ -94,22 +86,17 @@ public class TracatamentAlumnesNotesSentenciesPreparades {
 
     public static void afegirAlumne(String nom, float nota) throws SQLException {
         try {
-            String cadenaSQL = "INSERT INTO alumneAutoinc(nom,nota) VALUES(?,?)";
-            pstmt = conn.prepareStatement(cadenaSQL, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, nom);
-            pstmt.setFloat(2, nota);
-            
-            int n = pstmt.executeUpdate();
-            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+            stmt = conn.createStatement();
+            stmt.executeUpdate("INSERT INTO alumneAutoinc(nom,nota) VALUES ('" + nom + "'," + nota + ")", Statement.RETURN_GENERATED_KEYS);
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
                 while (rs.next()) {
                     System.out.println("Codi generat per getGeneratedKeys():"
                             + rs.getInt(1));
                 }
             }
-            System.out.println("S'ha afegit " + n + " items");
-
+            System.out.println("S'ha afegit " + stmt.getUpdateCount() + " items");
+            conn.commit();
         } finally {
-            pstmt.clearParameters();
         }
     }
 
@@ -121,31 +108,27 @@ public class TracatamentAlumnesNotesSentenciesPreparades {
     public static void consultarAlumnes() throws SQLException {
 
         try {
-            String cadenaSQL= "SELECT * FROM alumneAutoinc";
-            pstmt = conn.prepareStatement(cadenaSQL);
-            try (ResultSet resultat = pstmt.executeQuery()) {
-                while (resultat.next()) {
-                    System.out.println(resultat.getInt(1)
-                            + "-" + resultat.getString(2)
-                            + "-" + resultat.getString(3));
-                }
+            stmt = conn.createStatement();
+            ResultSet resultat = stmt.executeQuery("SELECT * FROM alumneAutoinc");
+            while (resultat.next()) {
+                System.out.println(resultat.getInt(1)
+                        + "-" + resultat.getString(2)
+                        + "-" + resultat.getString(3));
             }
-            
+            resultat.close();
+            stmt.close();
         } finally {
         }
     }
     /*
-     * Mostra tots els alumnes amb una nota major a nota
+     * Mostra tots els alumnes que compleixen la condició
      */
 
-    public static void consultarAlumnes(String nota) throws SQLException {
+    public static void consultarAlumnes(String condicio) throws SQLException {
 
         try {
-            String cadenaSQL= "SELECT * FROM alumneAutoinc WHERE nota > ?";
-            pstmt = conn.prepareStatement(cadenaSQL);
-            pstmt.setFloat(1, Float.parseFloat(nota));
-            
-            try (ResultSet resultat = pstmt.executeQuery()) {
+            stmt = conn.createStatement();
+            try (ResultSet resultat = stmt.executeQuery("SELECT * FROM alumneAutoinc WHERE nota " + condicio)) {
                 while (resultat.next()) {
                     System.out.println(resultat.getInt(1)
                             + "-" + resultat.getString(2)
@@ -154,7 +137,6 @@ public class TracatamentAlumnesNotesSentenciesPreparades {
             }
 
         } finally {
-             pstmt.clearParameters();
         }
     }
 

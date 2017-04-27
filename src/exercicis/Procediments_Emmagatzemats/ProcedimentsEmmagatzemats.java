@@ -1,9 +1,10 @@
-
-package edu.fje.daw2;
+package exercicis.Procediments_Emmagatzemats;
 
 import java.io.*;
 import java.sql.*;
 import java.util.Scanner;
+
+import exercicis.ClassUtilityConnexio.BDAccessor;
 
 /**
  * Classe que demostra el funcionament de la crida a procediments emmagatzemats de MySQL

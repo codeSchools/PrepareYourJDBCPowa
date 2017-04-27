@@ -1,28 +1,21 @@
-package exercicis;
+package exercicis.Execucio_sentencies;
 
 import java.sql.*;
 import java.io.*;
 import java.util.*;
 
 /**
- * Classe que realitza operacions sobre una taula Alumne. Utilitza una classe d'utilitat per a gestionar la connexió a
- * la BD i els camps són autonumèrics
+ * Classe que permet el tractament d'alumnes en una taula Alumne
  *
  * @author sergi grau
- * @version 1.0 6.02.2012
+ * @version 1.0, 02.03.2010
  */
-public class Autonumeric {
+public class TractamentAlumnesNotes {
 
     private static Connection conn;
-    private static Statement stmt;
-    private static BDAccessor bd= null;
 
-    public static void main(String args[])  {
-
-         bd = new BDAccessor();
+    public static void main(String args[]) {
         try {
-            conn = bd.obtenirConnexio();
-
             menuTractamentAlumnes();
         } catch (InputMismatchException ex) {
             System.out.println("opció incorrecta");
@@ -30,7 +23,7 @@ public class Autonumeric {
             for (Throwable t : ex) {
                 t.printStackTrace();
             }
-        } catch (IOException | ClassNotFoundException ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
@@ -42,8 +35,9 @@ public class Autonumeric {
      * @throws IOException
      * @throws InputMismatchException Excepció corresponent a la introducció d'una tecla
      */
-    public static void menuTractamentAlumnes() throws SQLException, IOException, InputMismatchException, ClassNotFoundException {
-   
+    public static void menuTractamentAlumnes() throws SQLException, IOException, InputMismatchException {
+
+        conn = obtenirConnexio();
         int opcio;
         do {
             System.out.println("1. Afegeix alumne");
@@ -55,13 +49,16 @@ public class Autonumeric {
 
             switch (opcio) {
                 case 1:
+                    System.out.print("codi:");
+                    entrada = new Scanner(System.in);
+                    int codi = entrada.nextInt();
                     entrada = new Scanner(System.in);
                     System.out.print("nom:");
                     String nom = entrada.nextLine();
                     entrada = new Scanner(System.in);
                     System.out.print("nota:");
                     float nota = entrada.nextFloat();
-                    afegirAlumne(nom, nota);
+                    afegirAlumne(codi, nom, nota);
                     break;
                 case 2:
                     consultarAlumnes();
@@ -82,18 +79,15 @@ public class Autonumeric {
         } while (opcio != 4);
     }
 
-    public static void afegirAlumne(String nom, float nota) throws SQLException {
+    public static void afegirAlumne(int codi, String nom, float nota) throws SQLException {
         try {
-            stmt = conn.createStatement();
-            stmt.executeUpdate("INSERT INTO alumneAutoinc(nom,nota) VALUES ('" + nom + "'," + nota + ")", Statement.RETURN_GENERATED_KEYS);
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                while (rs.next()) {
-                    System.out.println("Codi generat per getGeneratedKeys():"
-                            + rs.getInt(1));
-                }
-            }
-            System.out.println("S'ha afegit " + stmt.getUpdateCount() + " items");
-            conn.commit();
+            Statement stat = conn.createStatement();
+            stat.executeUpdate("INSERT INTO alumne VALUES ("
+                    + codi + ", '"
+                    + nom + "',"
+                    + nota + ")");
+            System.out.println("S'ha afegit " + stat.getUpdateCount() + " items");
+
         } finally {
         }
     }
@@ -106,15 +100,15 @@ public class Autonumeric {
     public static void consultarAlumnes() throws SQLException {
 
         try {
-            stmt = conn.createStatement();
-            ResultSet resultat = stmt.executeQuery("SELECT * FROM alumneAutoinc");
+            Statement stat = conn.createStatement();
+            ResultSet resultat = stat.executeQuery("SELECT * FROM alumne");
             while (resultat.next()) {
                 System.out.println(resultat.getInt(1)
                         + "-" + resultat.getString(2)
                         + "-" + resultat.getString(3));
             }
             resultat.close();
-            stmt.close();
+            stat.close();
         } finally {
         }
     }
@@ -125,18 +119,39 @@ public class Autonumeric {
     public static void consultarAlumnes(String condicio) throws SQLException {
 
         try {
-            stmt = conn.createStatement();
-            try (ResultSet resultat = stmt.executeQuery("SELECT * FROM alumneAutoinc WHERE nota " + condicio)) {
-                while (resultat.next()) {
-                    System.out.println(resultat.getInt(1)
-                            + "-" + resultat.getString(2)
-                            + "-" + resultat.getString(3));
-                }
+            Statement stat = conn.createStatement();
+            ResultSet resultat = stat.executeQuery("SELECT * FROM alumne WHERE nota " + condicio);
+            while (resultat.next()) {
+                System.out.println(resultat.getInt(1)
+                        + "-" + resultat.getString(2)
+                        + "-" + resultat.getString(3));
             }
-
+            resultat.close();
+            stat.close();
         } finally {
         }
     }
 
-    
+    /**
+     * Relitza una connexi a la BD, a partir de les propietats especificades en un fitxer database.properties
+     *
+     * @return la connexi amb la BD
+     */
+    public static Connection obtenirConnexio() throws SQLException, IOException {
+        
+        Properties propietats = new Properties();
+        FileInputStream fitxerEntrada = new FileInputStream(System.getProperty("user.dir")+ "/src/exercicis/database.properties");
+        propietats.load(fitxerEntrada);
+        fitxerEntrada.close();
+
+        String drivers = propietats.getProperty("jdbc.drivers");
+        if (drivers != null) {
+            System.setProperty("jdbc.drivers", drivers);
+        }
+        String url = propietats.getProperty("jdbc.url");
+        String usuari = propietats.getProperty("jdbc.username");
+        String contrasenya = propietats.getProperty("jdbc.password");
+
+        return DriverManager.getConnection(url, usuari, contrasenya);
+    }
 }

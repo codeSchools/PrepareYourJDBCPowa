@@ -1,4 +1,4 @@
-package exercicis;
+package exercicis.Execucio_consultes;
 
 import java.io.*;
 import java.util.*;
